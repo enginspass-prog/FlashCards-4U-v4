@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>FC4U Debug</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#060d18;color:#f0f6ff;font-family:sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.box{background:#0b1628;border:1px solid #1e2f48;border-radius:20px;padding:24px;width:100%;max-width:340px}
+h2{text-align:center;margin-bottom:20px;font-size:18px}
+input{width:100%;padding:12px;background:#0f1f35;border:1px solid #2a3f5a;border-radius:10px;color:#f0f6ff;font-size:14px;margin-bottom:14px;direction:rtl;font-family:sans-serif}
+button{width:100%;padding:14px;background:#1a6cf0;border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:bold;cursor:pointer;margin-bottom:10px;font-family:sans-serif}
+.avs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:14px}
+.av{width:44px;height:44px;border-radius:50%;border:2px solid #2a3f5a;background:#142540;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.av.sel{border-color:#4d9fff;background:#1a3060}
+#log{font-size:11px;color:#ff8c00;margin-top:10px;min-height:20px;direction:rtl;text-align:right}
+#screen2{display:none;text-align:center}
+#screen2 .big{font-size:48px;margin:20px 0}
+</style>
+</head>
+<body>
+<div class="box">
+  <div id="screen1">
+    <h2>⚡ FlashCards 4U</h2>
+    <div class="avs" id="avs"></div>
+    <input id="nm" placeholder="نام شما" autocomplete="off">
+    <button onclick="doLogin()">ورود →</button>
+    <div id="log">آماده...</div>
+  </div>
+  <div id="screen2">
+    <div class="big" id="uav">🧑</div>
+    <h2 id="uwelcome">سلام!</h2>
+    <button onclick="doLogout()">خروج</button>
+  </div>
+</div>
+
+<script>
+var avs = ["🧑","👩","🧒","👦","🧔","👴","🦸","🧙"];
+var selAv = "🧑";
+var log = document.getElementById("log");
+
+function L(msg) {
+  log.textContent = msg;
+  console.log(msg);
+}
+
+// Build avatars
+var avRow = document.getElementById("avs");
+avs.forEach(function(a, i) {
+  var btn = document.createElement("button");
+  btn.className = "av" + (i===0?" sel":"");
+  btn.textContent = a;
+  btn.style.cssText = "width:44px;height:44px;border-radius:50%;border:2px solid "+(i===0?"#4d9fff":"#2a3f5a")+";background:"+(i===0?"#1a3060":"#142540")+";font-size:22px;cursor:pointer;padding:0;font-family:sans-serif";
+  btn.onclick = function() {
+    selAv = a;
+    document.querySelectorAll("#avs button").forEach(function(b){
+      b.style.borderColor = "#2a3f5a";
+      b.style.background = "#142540";
+    });
+    btn.style.borderColor = "#4d9fff";
+    btn.style.background = "#1a3060";
+    L("آواتار انتخاب شد: " + a);
+  };
+  avRow.appendChild(btn);
+});
+
+function doLogin() {
+  L("در حال ورود...");
+  var name = document.getElementById("nm").value.trim();
+  L("نام: [" + name + "] آواتار: " + selAv);
+  
+  if (!name) {
+    L("❌ لطفاً نامت رو وارد کن");
+    return;
+  }
+  
+  try {
+    localStorage.setItem("fc4u_test", JSON.stringify({name: name, av: selAv}));
+    L("✅ ذخیره شد در localStorage");
+  } catch(e) {
+    L("⚠️ localStorage error: " + e.message);
+  }
+  
+  // Show screen 2
+  document.getElementById("screen1").style.display = "none";
+  document.getElementById("screen2").style.display = "block";
+  document.getElementById("uav").textContent = selAv;
+  document.getElementById("uwelcome").textContent = "سلام " + name + "! ✅";
+}
+
+function doLogout() {
+  document.getElementById("screen1").style.display = "block";
+  document.getElementById("screen2").style.display = "none";
+  L("خروج شد");
+}
+
+// Check existing login
+try {
+  var saved = JSON.parse(localStorage.getItem("fc4u_test")||"null");
+  if (saved) L("کاربر قبلی: " + saved.name);
+} catch(e) {}
+
+L("صفحه لود شد ✅");
+</script>
+</body>
+</html>
